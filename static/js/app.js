@@ -17,6 +17,8 @@ const dom = {
     refreshBtn: document.getElementById('refresh-btn'),
     exportCsvBtn: document.getElementById('export-csv-btn'),
     themeToggleBtn: document.getElementById('theme-toggle-btn'),
+    statusBadge: document.getElementById('status-badge'),
+    backToTopBtn: document.getElementById('back-to-top-btn'),
     refreshIcon: document.getElementById('refresh-icon'),
     lastUpdatedText: document.getElementById('last-updated-text'),
     searchInput: document.getElementById('search-input'),
@@ -98,6 +100,14 @@ async function fetchReleases(force = false) {
         
         appState.releases = payload.data;
         updateLastUpdatedText(payload.last_updated, payload.source);
+        
+        // Show persistent offline badge if source is fallback or warning is present
+        if (payload.warning || payload.source === 'cache_fallback') {
+            dom.statusBadge.style.display = 'inline-flex';
+            dom.statusBadge.innerHTML = '<i class="fa-solid fa-cloud-slash"></i> Offline';
+        } else {
+            dom.statusBadge.style.display = 'none';
+        }
         
         if (payload.warning) {
             showToast(payload.warning, 'error');
@@ -251,6 +261,18 @@ function renderFeed() {
                 </div>
             `;
             
+            // Mark all code tags as clickable copy elements
+            card.querySelectorAll('.card-content code').forEach(codeEl => {
+                codeEl.classList.add('clickable-code');
+                codeEl.setAttribute('title', 'Click to copy code');
+            });
+            
+            // Highlight matching search keywords inside text nodes safely
+            if (appState.searchQuery.trim()) {
+                const cardContentEl = card.querySelector('.card-content');
+                highlightKeyword(cardContentEl, appState.searchQuery.trim());
+            }
+            
             gridContainer.appendChild(card);
         });
     });
@@ -284,6 +306,22 @@ function attachCardEvents() {
                 showToast('Failed to copy text.', 'error');
             });
         });
+    });
+    
+    // Code snippet click-to-copy triggers
+    document.querySelectorAll('.clickable-code').forEach(codeEl => {
+        if (codeEl.getAttribute('data-listener-attached') !== 'true') {
+            codeEl.setAttribute('data-listener-attached', 'true');
+            codeEl.addEventListener('click', (e) => {
+                const codeText = codeEl.textContent;
+                navigator.clipboard.writeText(codeText).then(() => {
+                    showToast('Code snippet copied to clipboard!', 'success');
+                }).catch(err => {
+                    console.error('Copy code failed:', err);
+                    showToast('Failed to copy code.', 'error');
+                });
+            });
+        }
     });
     
     // Tweet composer triggers
@@ -447,6 +485,60 @@ function exportToCSV() {
 }
 
 // ==========================================================================
+// SEARCH HIGHLIGHT SYSTEM (DOM TEXT WALKER)
+// ==========================================================================
+function highlightKeyword(element, query) {
+    if (!query) return;
+    // Escape special regex characters to prevent pattern crashes
+    const escapedQuery = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const regex = new RegExp(`(${escapedQuery})`, 'gi');
+    
+    // Walk exclusively through pure text nodes to protect HTML tag formatting/properties
+    const walk = document.createTreeWalker(element, NodeFilter.SHOW_TEXT, null, false);
+    const textNodes = [];
+    let node;
+    while (node = walk.nextNode()) {
+        textNodes.push(node);
+    }
+    
+    textNodes.forEach(node => {
+        const text = node.nodeValue;
+        if (regex.test(text)) {
+            const parent = node.parentNode;
+            // Avoid highlights inside mark nodes, anchor links, scripts, or styles
+            if (parent.tagName === 'MARK' || parent.tagName === 'SCRIPT' || parent.tagName === 'STYLE' || parent.tagName === 'A' && parent.classList.contains('btn-icon')) {
+                return;
+            }
+            
+            const fragment = document.createDocumentFragment();
+            let lastIdx = 0;
+            
+            text.replace(regex, (match, p1, offset) => {
+                // Append text preceding the match
+                if (offset > lastIdx) {
+                    fragment.appendChild(document.createTextNode(text.substring(lastIdx, offset)));
+                }
+                
+                // Construct highlighting node
+                const mark = document.createElement('mark');
+                mark.className = 'search-highlight';
+                mark.textContent = match;
+                fragment.appendChild(mark);
+                
+                lastIdx = offset + match.length;
+            });
+            
+            // Append trailing text
+            if (lastIdx < text.length) {
+                fragment.appendChild(document.createTextNode(text.substring(lastIdx)));
+            }
+            
+            parent.replaceChild(fragment, node);
+        }
+    });
+}
+
+// ==========================================================================
 // THEME SWITCH SYSTEM (LIGHT / DARK MODE)
 // ==========================================================================
 function toggleTheme() {
@@ -480,6 +572,38 @@ function setupEventListeners() {
     
     // Theme Toggle Button
     dom.themeToggleBtn.addEventListener('click', toggleTheme);
+    
+    // Floating Back to Top Button Actions
+    window.addEventListener('scroll', () => {
+        if (window.scrollY > 400) {
+            dom.backToTopBtn.style.display = 'flex';
+        } else {
+            dom.backToTopBtn.style.display = 'none';
+        }
+    });
+    
+    dom.backToTopBtn.addEventListener('click', () => {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+    
+    // Global Keyboard Hotkey listener
+    document.addEventListener('keydown', (e) => {
+        // Hotkey: '/' focuses search input bar (only if user is not already typing elsewhere)
+        if (e.key === '/' && document.activeElement.tagName !== 'INPUT' && document.activeElement.tagName !== 'TEXTAREA') {
+            e.preventDefault();
+            dom.searchInput.focus();
+            dom.searchInput.select();
+        }
+        
+        // Hotkey: 'Esc' clears search bar contents and blurs input focus
+        if (e.key === 'Escape' && document.activeElement === dom.searchInput) {
+            dom.searchInput.value = '';
+            appState.searchQuery = '';
+            dom.clearSearchBtn.style.display = 'none';
+            applyFiltersAndRender();
+            dom.searchInput.blur();
+        }
+    });
     
     // Retry Button (Error State)
     dom.retryBtn.addEventListener('click', () => fetchReleases(true));

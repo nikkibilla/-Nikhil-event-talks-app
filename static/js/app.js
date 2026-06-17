@@ -16,6 +16,7 @@ let appState = {
 const dom = {
     refreshBtn: document.getElementById('refresh-btn'),
     exportCsvBtn: document.getElementById('export-csv-btn'),
+    themeToggleBtn: document.getElementById('theme-toggle-btn'),
     refreshIcon: document.getElementById('refresh-icon'),
     lastUpdatedText: document.getElementById('last-updated-text'),
     searchInput: document.getElementById('search-input'),
@@ -446,6 +447,28 @@ function exportToCSV() {
 }
 
 // ==========================================================================
+// THEME SWITCH SYSTEM (LIGHT / DARK MODE)
+// ==========================================================================
+function toggleTheme() {
+    const isLight = document.body.classList.toggle('light-theme');
+    localStorage.setItem('theme', isLight ? 'light' : 'dark');
+    updateThemeUI(isLight);
+}
+
+function updateThemeUI(isLight) {
+    const icon = document.getElementById('theme-icon');
+    if (icon) {
+        if (isLight) {
+            icon.className = 'fa-solid fa-sun';
+            showToast('Swapped to light mode!', 'info');
+        } else {
+            icon.className = 'fa-solid fa-moon';
+            showToast('Swapped to dark mode!', 'info');
+        }
+    }
+}
+
+// ==========================================================================
 // EVENT LISTENERS & INITS
 // ==========================================================================
 function setupEventListeners() {
@@ -454,6 +477,9 @@ function setupEventListeners() {
     
     // Export CSV Button
     dom.exportCsvBtn.addEventListener('click', exportToCSV);
+    
+    // Theme Toggle Button
+    dom.themeToggleBtn.addEventListener('click', toggleTheme);
     
     // Retry Button (Error State)
     dom.retryBtn.addEventListener('click', () => fetchReleases(true));
@@ -527,6 +553,14 @@ function setupEventListeners() {
 
 // Initial Bootstrapping
 document.addEventListener('DOMContentLoaded', () => {
+    // Load persisted color scheme theme
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme === 'light') {
+        document.body.classList.add('light-theme');
+        const icon = document.getElementById('theme-icon');
+        if (icon) icon.className = 'fa-solid fa-sun';
+    }
+    
     setupEventListeners();
     fetchReleases(false); // Perform cached load on initial load
 });

@@ -1165,3 +1165,200 @@ a:hover {
         max-width: none;
     }
 }
+
+/* ==========================================================================
+   LIGHT MODE STYLING OVERRIDES
+   ========================================================================== */
+body.light-theme {
+    --bg-base: #f1f5f9;
+    --bg-surface: rgba(255, 255, 255, 0.75);
+    --bg-surface-hover: rgba(241, 245, 249, 0.95);
+    --bg-card: rgba(255, 255, 255, 0.85);
+    --bg-card-hover: rgba(255, 255, 255, 0.95);
+    
+    --border-color: rgba(15, 23, 42, 0.08);
+    --border-color-hover: rgba(15, 23, 42, 0.16);
+    --border-accent: rgba(99, 102, 241, 0.15);
+    
+    --text-primary: #0f172a;
+    --text-secondary: #475569;
+    --text-muted: #64748b;
+}
+
+/* Theme Toggle Button Amber Focus style */
+body.light-theme .theme-toggle {
+    color: #d97706;
+    background: rgba(217, 119, 6, 0.08);
+    border-color: rgba(217, 119, 6, 0.18);
+}
+
+body.light-theme .theme-toggle:hover {
+    color: #b45309;
+    background: rgba(217, 119, 6, 0.15);
+    border-color: rgba(217, 119, 6, 0.3);
+}
+
+/* Background elements modifications */
+body.light-theme .bg-grid {
+    opacity: 0.05;
+    background-image: 
+        linear-gradient(to right, #0f172a 1px, transparent 1px),
+        linear-gradient(to bottom, #0f172a 1px, transparent 1px);
+}
+
+body.light-theme .bg-glow-1 {
+    background: radial-gradient(circle, rgba(99, 102, 241, 0.12) 0%, rgba(99, 102, 241, 0) 70%);
+}
+
+body.light-theme .bg-glow-2 {
+    background: radial-gradient(circle, rgba(6, 182, 212, 0.1) 0%, rgba(6, 182, 212, 0) 70%);
+}
+
+/* Core Typography & Components */
+body.light-theme .logo-text {
+    background: linear-gradient(135deg, #0f172a 30%, #4f46e5 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+body.light-theme .logo-text span {
+    background: linear-gradient(135deg, #4f46e5 0%, #059669 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+body.light-theme .date-heading {
+    color: #0f172a;
+}
+
+body.light-theme .card-content strong {
+    color: #0f172a;
+}
+
+body.light-theme .card-content code {
+    background: rgba(15, 23, 42, 0.05);
+    color: #be123c;
+    border: 1px solid rgba(15, 23, 42, 0.05);
+}
+
+/* Controls adjustments in Light Mode */
+body.light-theme .controls-card {
+    background: rgba(255, 255, 255, 0.7);
+    border-color: rgba(15, 23, 42, 0.08);
+}
+
+body.light-theme .search-box input {
+    background: rgba(255, 255, 255, 0.9);
+    border-color: rgba(15, 23, 42, 0.1);
+    color: #0f172a;
+}
+
+body.light-theme .search-box input:focus {
+    background: #ffffff;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 15px rgba(99, 102, 241, 0.1);
+}
+
+body.light-theme .chip {
+    background: rgba(15, 23, 42, 0.04);
+}
+
+body.light-theme .chip:hover {
+    background: rgba(15, 23, 42, 0.08);
+}
+
+body.light-theme .chip.active {
+    background: rgba(99, 102, 241, 0.08);
+    border-color: rgba(99, 102, 241, 0.4);
+    color: #312e81;
+}
+
+body.light-theme .last-updated {
+    background: rgba(15, 23, 42, 0.02);
+}
+
+/* Cards adjustments */
+body.light-theme .update-card {
+    background: rgba(255, 255, 255, 0.75);
+    border-color: rgba(15, 23, 42, 0.08);
+}
+
+body.light-theme .update-card:hover {
+    background: #ffffff;
+    border-color: rgba(15, 23, 42, 0.15);
+}
+
+/* Specific Card theme overrides for Light Mode to make hover colors contrast beautifully */
+body.light-theme .update-card.card-feature:hover { border-color: rgba(16, 185, 129, 0.45); }
+body.light-theme .update-card.card-announcement:hover { border-color: rgba(139, 92, 246, 0.45); }
+body.light-theme .update-card.card-issue:hover { border-color: rgba(239, 68, 68, 0.45); }
+body.light-theme .update-card.card-deprecation:hover { border-color: rgba(245, 158, 11, 0.45); }
+body.light-theme .update-card.card-general:hover { border-color: rgba(6, 182, 212, 0.45); }
+
+/* Twitter Modal Adjustments in Light Mode */
+body.light-theme .modal-card {
+    background: #ffffff;
+    border-color: rgba(15, 23, 42, 0.12);
+    box-shadow: 0 25px 60px -15px rgba(15, 23, 42, 0.2);
+}
+
+body.light-theme .modal-title-area h2 {
+    color: #0f172a;
+}
+
+body.light-theme .modal-header {
+    border-bottom-color: rgba(15, 23, 42, 0.08);
+}
+
+body.light-theme .tweet-composer-wrapper {
+    background: #f8fafc;
+    border-color: rgba(15, 23, 42, 0.12);
+}
+
+body.light-theme .tweet-composer-wrapper textarea {
+    color: #0f172a;
+}
+
+body.light-theme .tweet-preview-card {
+    background: #f1f5f9;
+    border-color: rgba(15, 23, 42, 0.06);
+}
+
+body.light-theme .preview-tag {
+    background: #ffffff;
+    color: var(--text-muted);
+}
+
+body.light-theme .modal-actions {
+    background: #f8fafc;
+    border-top-color: rgba(15, 23, 42, 0.08);
+}
+
+body.light-theme .btn-x-twitter {
+    background-color: #0f1419;
+    color: #ffffff;
+    border-color: #0f1419;
+}
+
+body.light-theme .btn-x-twitter:hover {
+    background-color: #272c30;
+    border-color: #272c30;
+}
+
+/* Skeletons */
+body.light-theme .skeleton-card {
+    background: rgba(15, 23, 42, 0.02);
+    border-color: rgba(15, 23, 42, 0.03);
+}
+
+body.light-theme .skeleton-date {
+    background: rgba(15, 23, 42, 0.03);
+}
+
+/* Toast Notification in Light Mode */
+body.light-theme .toast {
+    background: #ffffff;
+    color: #0f172a;
+    border: 1px solid rgba(15, 23, 42, 0.08);
+    box-shadow: 0 15px 30px rgba(15, 23, 42, 0.12), 0 0 0 1px rgba(15, 23, 42, 0.02);
+}

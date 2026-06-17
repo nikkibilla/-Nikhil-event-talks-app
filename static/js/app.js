@@ -15,6 +15,7 @@ let appState = {
 // DOM Cache
 const dom = {
     refreshBtn: document.getElementById('refresh-btn'),
+    exportCsvBtn: document.getElementById('export-csv-btn'),
     refreshIcon: document.getElementById('refresh-icon'),
     lastUpdatedText: document.getElementById('last-updated-text'),
     searchInput: document.getElementById('search-input'),
@@ -233,7 +234,10 @@ function renderFeed() {
                     ${item.html_content}
                 </div>
                 <div class="card-actions">
-                    <button class="btn-icon btn-copy-card" title="Copy Direct Link" data-link="${itemAnchor}">
+                    <button class="btn-icon btn-copy-link" title="Copy Direct Link" data-link="${itemAnchor}">
+                        <i class="fa-solid fa-link"></i>
+                    </button>
+                    <button class="btn-icon btn-copy-text" title="Copy Update Text" data-text="${encodeURIComponent(item.text_content)}">
                         <i class="fa-regular fa-copy"></i>
                     </button>
                     <button class="btn-icon btn-tweet-card" title="Share on X" 
@@ -256,7 +260,7 @@ function renderFeed() {
 
 function attachCardEvents() {
     // Direct link copy triggers
-    document.querySelectorAll('.btn-copy-card').forEach(btn => {
+    document.querySelectorAll('.btn-copy-link').forEach(btn => {
         btn.addEventListener('click', (e) => {
             const link = btn.getAttribute('data-link');
             navigator.clipboard.writeText(link).then(() => {
@@ -264,6 +268,19 @@ function attachCardEvents() {
             }).catch(err => {
                 console.error('Copy failed:', err);
                 showToast('Failed to copy link.', 'error');
+            });
+        });
+    });
+    
+    // Update content text copy triggers
+    document.querySelectorAll('.btn-copy-text').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const text = decodeURIComponent(btn.getAttribute('data-text'));
+            navigator.clipboard.writeText(text).then(() => {
+                showToast('Update content copied to clipboard!', 'success');
+            }).catch(err => {
+                console.error('Copy failed:', err);
+                showToast('Failed to copy text.', 'error');
             });
         });
     });
@@ -376,11 +393,67 @@ function publishTweet() {
 }
 
 // ==========================================================================
+// EXPORT SYSTEM (CSV ENGINE)
+// ==========================================================================
+function exportToCSV() {
+    if (appState.filteredData.length === 0) {
+        showToast('No filtered data available to export.', 'error');
+        return;
+    }
+    
+    const headers = ['Date', 'Category', 'Update Description', 'Reference Link'];
+    const rows = [];
+    
+    appState.filteredData.forEach(entry => {
+        entry.items.forEach(item => {
+            rows.push([
+                entry.date,
+                item.type,
+                item.text_content,
+                entry.link
+            ]);
+        });
+    });
+    
+    // RFC-4180 CSV Compliant Parser (escapes outer cell commas and doubles internal quotes)
+    const csvContent = [
+        headers.join(','),
+        ...rows.map(row => row.map(val => {
+            const escaped = val.replace(/"/g, '""');
+            return `"${escaped}"`;
+        }).join(','))
+    ].join('\r\n');
+    
+    try {
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.setAttribute('href', url);
+        
+        const datestamp = new Date().toISOString().slice(0, 10);
+        link.setAttribute('download', `bigquery_releases_${datestamp}.csv`);
+        link.style.visibility = 'hidden';
+        
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        showToast('Successfully exported data to CSV!', 'success');
+    } catch (err) {
+        console.error('CSV Export failure:', err);
+        showToast('Failed to export CSV file.', 'error');
+    }
+}
+
+// ==========================================================================
 // EVENT LISTENERS & INITS
 // ==========================================================================
 function setupEventListeners() {
     // Refresh Button
     dom.refreshBtn.addEventListener('click', () => fetchReleases(true));
+    
+    // Export CSV Button
+    dom.exportCsvBtn.addEventListener('click', exportToCSV);
     
     // Retry Button (Error State)
     dom.retryBtn.addEventListener('click', () => fetchReleases(true));
